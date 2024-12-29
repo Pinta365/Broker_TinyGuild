@@ -21,8 +21,8 @@ Stay connected with your guild without cluttering your UI!
 
 You can download TinyGuild from these popular sources:
 
-* [Wago Addons](https://addons.wago.io/addons/broker_tinyguild) 
-* [CurseForge](https://www.curseforge.com/wow/addons/broker_tinyguild) 
+* [Wago Addons](https://addons.wago.io/addons/broker-tinyguild)
+* [CurseForge](https://www.curseforge.com/wow/addons/broker-tinyguild)
 
 ## Troubleshooting
 
