@@ -5,9 +5,8 @@
 ## Author: Pinta365@Github
 ## Version: 0.0.1
 ## SavedVariables: BrokerTinyGuildDB
-## X-Curse-Project-ID: 
-## X-Wago-ID: 
-## X-WoWI-ID: 
+## X-Curse-Project-ID: 1168039
+## X-Wago-ID: aNDmRo6o
 ## IconTexture: Interface\AddOns\Broker_TinyGuild\Textures\pinta
 
 embeds.xml
