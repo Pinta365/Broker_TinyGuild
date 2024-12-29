@@ -139,7 +139,6 @@ local function ShowGuildRoster(ldbObject)
         ShowGuildRoster(ldbObject)
     end
 
-    -- Add headers
     local headerPadding = 10
     local nameHorizontalPosition = 0
     local levelHorizontalPosition = nameMaxWidth
@@ -288,7 +287,13 @@ local function ShowGuildRoster(ldbObject)
 
         verticalOffset = verticalOffset + verticalIncrement
     end
-
+    
+    local footerText = rosterFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+        footerText:SetPoint("BOTTOMRIGHT", rosterFrame, "BOTTOMRIGHT", -10, 10)
+        footerText:SetText("|cFFAAAAAALeft-Click to whisper | Right-Click to invite|r")
+        footerText:SetJustifyH("RIGHT")
+        rosterFrame.footerText = footerText
+        
     rosterFrame:Show()
     rosterFrame:SetClampedToScreen(true)
 
