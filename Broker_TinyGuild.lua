@@ -11,7 +11,6 @@ local publicNoteMaxWidth = 200
 
 local function UpdateGuildRoster()
     local newRoster = {}
-
     local numGuildMembers, numOnlineGuildMembers = GetNumGuildMembers()
     local showOffline = GetGuildRosterShowOffline()
     local totalToScan = showOffline and numGuildMembers or numOnlineGuildMembers
@@ -26,7 +25,7 @@ local function UpdateGuildRoster()
                 publicNote = string.sub(publicNote, 1, 197) .. "..."
             end
 
-            newRoster[i] = {
+            table.insert(newRoster, {
                 name = name,
                 level = level,
                 rankName = rankName,
@@ -34,7 +33,7 @@ local function UpdateGuildRoster()
                 classLocalizationIndependent = classLocalizationIndependent,
                 zone = zone,
                 publicNote = publicNote,
-            }
+            })
         end
     end
 
