@@ -2,7 +2,7 @@
 
 local addonName, AddonTable = ...
 local rosterFrame
-local tempFontString 
+local tempFontString
 
 local nameMaxWidth = 0
 local rankMaxWidth = 0
@@ -12,8 +12,11 @@ local publicNoteMaxWidth = 200
 local function UpdateGuildRoster()
     local newRoster = {}
 
-    local numGuildMembers = GetNumGuildMembers()
-    for i = 1, numGuildMembers do
+    local numGuildMembers, numOnlineGuildMembers = GetNumGuildMembers()
+    local showOffline = GetGuildRosterShowOffline()
+    local totalToScan = showOffline and numGuildMembers or numOnlineGuildMembers
+
+    for i = 1, totalToScan do
         local name, rankName, _, level, classDisplayName, zone,
               publicNote, _, isOnline, _, classLocalizationIndependent = GetGuildRosterInfo(i)
 
@@ -384,7 +387,7 @@ local function OnEvent(self, event, ...)
     end
 end
 
-local f = CreateFrame("Frame")
+local f = CreateFrame("Frame", "BrokerTinyGuild")
 f:RegisterEvent("ADDON_LOADED")
 f:RegisterEvent("GUILD_MOTD")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
