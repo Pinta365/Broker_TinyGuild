@@ -4,10 +4,10 @@ local addonName, AddonTable = ...
 local rosterFrame
 local tempFontString
 
-local nameMaxWidth = 0
-local rankMaxWidth = 0
-local zoneMaxWidth = 0
-local publicNoteMaxWidth = 200
+local nameMaxWidth
+local rankMaxWidth
+local zoneMaxWidth
+local publicNoteMaxWidth
 
 local function UpdateGuildRoster()
     local newRoster = {}
@@ -59,9 +59,9 @@ local function UpdateGuildRoster()
         AddonTable.guildRoster[i] = member
     end
 
-    nameMaxWidth = 0
-    rankMaxWidth = 0
-    zoneMaxWidth = 0
+    nameMaxWidth = 50
+    rankMaxWidth = 20
+    zoneMaxWidth = 35
     publicNoteMaxWidth = 200
 
     for i, member in ipairs(newRoster) do
@@ -91,6 +91,22 @@ local function AnchorRosterFrame(ldbObject)
     rosterFrame:SetPoint(isTop and "TOP" or "BOTTOM", ldbObject, isTop and "BOTTOM" or "TOP", 0, 0)
 end
 
+local function updateBrokerText()
+    if IsInGuild() then
+        if (AddonTable.online) then
+            if (AddonTable.numGuildMembers > 0) then
+                AddonTable.BrokerTinyGuild.text = string.format(WrapTextInColorCode("%s:", "ff40FF40") .. " %d/%d Online", AddonTable.guildName, AddonTable.online, AddonTable.numGuildMembers)
+            else
+                AddonTable.BrokerTinyGuild.text = string.format(WrapTextInColorCode("%s:", "ff40FF40") .. " %d Online", AddonTable.guildName, AddonTable.online)
+            end
+        else
+            AddonTable.BrokerTinyGuild.text = string.format(WrapTextInColorCode("%s", "ff40FF40"), AddonTable.guildName)
+        end
+    else
+        AddonTable.BrokerTinyGuild.text = "No Guild"
+    end
+end
+
 local function updateGMOTD()
     AddonTable.GMOTD = GetGuildRosterMOTD()
 end
@@ -100,12 +116,25 @@ local function updateGuildName()
 end
 
 local function updateGuildOnline()
-    local online, _ = UpdateGuildRoster()
-    if online > 0 then
-        AddonTable.online = online
-    else
-        AddonTable.online = nil
+
+    --delayed throttling so we always got the latest data but after short delay to prevent spamming and resource hogging.
+    if not AddonTable.guildListUpdateTimer then
+        AddonTable.guildListUpdateTimer = C_Timer.NewTimer(4, function()
+            local online, numGuildMembers = UpdateGuildRoster()
+            if online > 0 then
+                AddonTable.online = online
+                AddonTable.numGuildMembers = numGuildMembers
+            else
+                AddonTable.online = nil
+                AddonTable.numGuildMembers = numGuildMembers
+            end
+            updateGMOTD()
+            updateGuildName()
+            updateBrokerText()
+            AddonTable.guildListUpdateTimer = nil
+        end)
     end
+
 end
 
 local function ShowGuildRoster(ldbObject)
@@ -152,7 +181,7 @@ local function ShowGuildRoster(ldbObject)
     local verticalIncrement = 15
     local horizontalOffset = 15
 
-    local totalHeight = #AddonTable.guildRoster * verticalIncrement + 50
+    local totalHeight = #AddonTable.guildRoster * verticalIncrement + 60
 
     rosterFrame = CreateFrame("Frame", nil, UIParent, "TooltipBorderedFrameTemplate")
     rosterFrame:SetSize(publicNoteHorizontalPosition + publicNoteMaxWidth + headerPadding, totalHeight)
@@ -169,15 +198,15 @@ local function ShowGuildRoster(ldbObject)
         rosterFrame:SetSize(publicNoteHorizontalPosition + publicNoteMaxWidth + headerPadding, totalHeight)
     end
 
-    local nameHeader = CreateFrame("Button", nil, rosterFrame)  
+    local nameHeader = CreateFrame("Button", nil, rosterFrame)
     local nameHeaderText = nameHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     nameHeader:SetPoint("TOPLEFT", nameHorizontalPosition + headerPadding, -(verticalOffset - 15))
     nameHeader:RegisterForClicks("LeftButtonUp")
     nameHeaderText:SetPoint("LEFT", 0, 0)
     nameHeaderText:SetText("Name")
     nameHeader:SetSize(nameHeaderText:GetStringWidth() + 10, 15)
-    nameHeader:SetScript("OnClick", SortByHeader)
     nameHeader.sortType = "name"
+    nameHeader:SetScript("OnClick", SortByHeader)
 
     local levelHeader = CreateFrame("Button", nil, rosterFrame)
     local levelHeaderText = levelHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
@@ -186,8 +215,8 @@ local function ShowGuildRoster(ldbObject)
     levelHeaderText:SetPoint("LEFT", 0, 0)
     levelHeaderText:SetText("Level")
     levelHeader:SetSize(levelHeaderText:GetStringWidth() + 10, 15)
-    levelHeader:SetScript("OnClick", SortByHeader)
     levelHeader.sortType = "level"
+    levelHeader:SetScript("OnClick", SortByHeader)
 
     local RankHeader = CreateFrame("Button", nil, rosterFrame)
     local RankHeaderText = RankHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
@@ -196,8 +225,8 @@ local function ShowGuildRoster(ldbObject)
     RankHeaderText:SetPoint("LEFT", 0, 0)
     RankHeaderText:SetText("Rank")
     RankHeader:SetSize(RankHeaderText:GetStringWidth() + 10, 15)
-    RankHeader:SetScript("OnClick", SortByHeader)
     RankHeader.sortType = "rank"
+    RankHeader:SetScript("OnClick", SortByHeader)
 
     local zoneHeader = CreateFrame("Button", nil, rosterFrame)
     local zoneHeaderText = zoneHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
@@ -206,8 +235,8 @@ local function ShowGuildRoster(ldbObject)
     zoneHeaderText:SetPoint("LEFT", 0, 0)
     zoneHeaderText:SetText("Zone")
     zoneHeader:SetSize(zoneHeaderText:GetStringWidth() + 10, 15)
-    zoneHeader:SetScript("OnClick", SortByHeader)
     zoneHeader.sortType = "zone"
+    zoneHeader:SetScript("OnClick", SortByHeader)
 
     local publicNoteHeader = CreateFrame("Button", nil, rosterFrame)
     local publicNoteHeaderText = publicNoteHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
@@ -216,8 +245,8 @@ local function ShowGuildRoster(ldbObject)
     publicNoteHeaderText:SetPoint("LEFT", 0, 0)
     publicNoteHeaderText:SetText("Public Note")
     publicNoteHeader:SetSize(publicNoteHeaderText:GetStringWidth() + 10, 15)
-    publicNoteHeader:SetScript("OnClick", SortByHeader)
     publicNoteHeader.sortType = "note"
+    publicNoteHeader:SetScript("OnClick", SortByHeader)
 
     for i, member in ipairs(AddonTable.guildRoster) do
         local memberFrame = CreateFrame("Button", nil, rosterFrame)
@@ -321,15 +350,15 @@ local function InitBroker()
     local LDB = LibStub("LibDataBroker-1.1")     
     AddonTable.BrokerTinyGuild = LDB:NewDataObject("Broker_TinyGuild", {
         type = "data source",
-        text = "TinyGuild",
+        text = "TinyGuild Loading",
         icon = "Interface\\AddOns\\KeystoneRoulette\\Textures\\pinta",
 
         OnClick = function(self, button)
-            --Open guild & communities tab?
+            ToggleGuildFrame()
         end,
 
         OnEnter = function(self)
-            if IsInGuild() then
+            if IsInGuild() and AddonTable.online then
                 ShowGuildRoster(self)
             end
         end,
@@ -342,17 +371,7 @@ local function InitBroker()
     })
 end
 
-local function updateBrokerText()
-    if IsInGuild() then
-        if (AddonTable.online) then
-            AddonTable.BrokerTinyGuild.text = string.format(WrapTextInColorCode("%s:", "ff19ff19") .. " %d Online", AddonTable.guildName, AddonTable.online)
-        else
-            AddonTable.BrokerTinyGuild.text = string.format(WrapTextInColorCode("%s", "ff19ff19"), AddonTable.guildName)
-        end
-    else
-        AddonTable.BrokerTinyGuild.text = "No Guild"
-    end
-end
+
 
 local function InitTinyGuild()
     AddonTable.SortOrder = "name"
@@ -368,28 +387,17 @@ local function OnEvent(self, event, ...)
         InitBroker()
     elseif event == "GUILD_MOTD" then
         updateGMOTD()
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        updateGuildName()
-        updateBrokerText()
-    elseif event == "PLAYER_GUILD_UPDATE" then
-        updateGMOTD()
-        updateGuildName()
+    elseif event == "PLAYER_GUILD_UPDATE" or 
+            (IsInGuild() and (event == "GUILD_ROSTER_UPDATE" or
+                 event == "GUILD_RANKS_UPDATE")) then
         updateGuildOnline()
-        updateBrokerText()
-    elseif IsInGuild() and
-            (event == "GUILD_ROSTER_UPDATE" or
-            event == "GUILD_RANKS_UPDATE") then
-        updateGMOTD()
-        updateGuildName()
-        updateGuildOnline()
-        updateBrokerText()
+
     end
 end
 
 local f = CreateFrame("Frame", "BrokerTinyGuild")
 f:RegisterEvent("ADDON_LOADED")
 f:RegisterEvent("GUILD_MOTD")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("GUILD_ROSTER_UPDATE")
 f:RegisterEvent("GUILD_RANKS_UPDATE")
 f:RegisterEvent("PLAYER_GUILD_UPDATE")
