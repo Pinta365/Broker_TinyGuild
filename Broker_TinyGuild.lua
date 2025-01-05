@@ -184,6 +184,7 @@ local function showGuildRoster(ldbObject)
     local totalHeight = #AddonTable.guildRoster * verticalIncrement + 60
 
     rosterFrame = CreateFrame("Frame", nil, UIParent, "TooltipBorderedFrameTemplate")
+    rosterFrame:SetFrameStrata("HIGH")
     rosterFrame:SetSize(publicNoteHorizontalPosition + publicNoteMaxWidth + headerPadding, totalHeight)
 
     if AddonTable.GMOTD then
