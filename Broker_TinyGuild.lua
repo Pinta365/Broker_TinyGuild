@@ -17,9 +17,13 @@ local function updateGuildRoster()
 
     for i = 1, totalToScan do
         local name, rankName, _, level, classDisplayName, zone,
-              publicNote, _, isOnline, _, classLocalizationIndependent = GetGuildRosterInfo(i)
+              publicNote, _, isOnline, _, classLocalizationIndependent,
+              _, _, _, _, _, guid = GetGuildRosterInfo(i)
 
-        if isOnline then
+        if isOnline then         
+            local raceId = guid and C_PlayerInfo.GetRace(PlayerLocation:CreateFromGUID(guid));
+            local factionInfo = raceId and C_CreatureInfo.GetFactionInfo(raceId)
+            local factionName = factionInfo and factionInfo.groupTag
 
             if publicNote and #publicNote > 200 then
                 publicNote = string.sub(publicNote, 1, 197) .. "..."
@@ -31,27 +35,12 @@ local function updateGuildRoster()
                 rankName = rankName,
                 classDisplayName = classDisplayName,
                 classLocalizationIndependent = classLocalizationIndependent,
+                factionName = factionName,
                 zone = zone,
                 publicNote = publicNote,
             })
         end
     end
-
-    sort(newRoster, function(a, b)
-        if AddonTable.SortOrder == "name" then
-            return (AddonTable.SortAscending and a.name < b.name) or (not AddonTable.SortAscending and a.name > b.name)
-        elseif AddonTable.SortOrder == "level" then
-            return (AddonTable.SortAscending and a.level < b.level) or (not AddonTable.SortAscending and a.level > b.level)
-        elseif AddonTable.SortOrder == "rank" then
-            return (AddonTable.SortAscending and a.rankName < b.rankName) or (not AddonTable.SortAscending and a.rankName > b.rankName)
-        elseif AddonTable.SortOrder == "zone" then
-            return (AddonTable.SortAscending and a.zone < b.zone) or (not AddonTable.SortAscending and a.zone > b.zone)
-        elseif AddonTable.SortOrder == "note" then
-            return (AddonTable.SortAscending and a.publicNote < b.publicNote) or (not AddonTable.SortAscending and a.publicNote > b.publicNote)
-        else
-            return a.name < b.name
-        end
-    end)
 
     wipe(AddonTable.guildRoster)
 
@@ -76,6 +65,14 @@ local function updateGuildRoster()
 
         tempFontString:SetText(member.publicNote)
         publicNoteMaxWidth = max(publicNoteMaxWidth, tempFontString:GetStringWidth())
+
+        if member.factionName == "Alliance" then
+            member.factionIcon = "Interface\\FriendsFrame\\PlusManz-Alliance.blp"
+        elseif member.factionName == "Horde" then
+            member.factionIcon = "Interface\\FriendsFrame\\PlusManz-Horde.blp"
+        else
+            member.factionIcon = nil
+        end
     end
 
     nameMaxWidth = nameMaxWidth + 15
@@ -172,7 +169,7 @@ local function showGuildRoster(ldbObject)
 
     local headerPadding = 10
     local nameHorizontalPosition = 0
-    local levelHorizontalPosition = nameMaxWidth
+    local levelHorizontalPosition = nameMaxWidth + 20
     local RankHorizontalPosition = levelHorizontalPosition+40
     local zoneorizontalPosition = RankHorizontalPosition+rankMaxWidth+10
     local publicNoteHorizontalPosition = zoneorizontalPosition+10+zoneMaxWidth
@@ -182,10 +179,11 @@ local function showGuildRoster(ldbObject)
     local horizontalOffset = 15
 
     local totalHeight = #AddonTable.guildRoster * verticalIncrement + 60
+    local totalWidth = publicNoteHorizontalPosition + publicNoteMaxWidth + headerPadding
 
     rosterFrame = CreateFrame("Frame", nil, UIParent, "TooltipBorderedFrameTemplate")
     rosterFrame:SetFrameStrata("HIGH")
-    rosterFrame:SetSize(publicNoteHorizontalPosition + publicNoteMaxWidth + headerPadding, totalHeight)
+    rosterFrame:SetSize(totalWidth, totalHeight)
 
     if AddonTable.GMOTD then
         local motdHeader = rosterFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -196,7 +194,7 @@ local function showGuildRoster(ldbObject)
 
         verticalOffset = verticalOffset + motdHeader:GetStringHeight() + 10
         totalHeight = totalHeight +motdHeader:GetStringHeight() + 10
-        rosterFrame:SetSize(publicNoteHorizontalPosition + publicNoteMaxWidth + headerPadding, totalHeight)
+        rosterFrame:SetSize(totalWidth, totalHeight)
     end
 
     local nameHeader = CreateFrame("Button", nil, rosterFrame)
@@ -259,6 +257,13 @@ local function showGuildRoster(ldbObject)
         local nameText = memberFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
         nameText:SetPoint("LEFT", nameHorizontalPosition, 0)
         memberFrame.nameText = nameText
+
+        local factionIcon = memberFrame:CreateTexture(nil, "ARTWORK")
+        factionIcon:SetPoint("LEFT", levelHorizontalPosition - 20, 0)
+        factionIcon:SetSize(15, 15)
+        if member.factionIcon then
+            factionIcon:SetTexture(member.factionIcon)
+        end
 
         local levelText = memberFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
         levelText:SetPoint("LEFT", levelHorizontalPosition, 0)
