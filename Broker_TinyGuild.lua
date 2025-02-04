@@ -17,7 +17,7 @@ local function updateGuildRoster()
 
     for i = 1, totalToScan do
         local name, rankName, _, level, classDisplayName, zone,
-              publicNote, _, isOnline, _, classLocalizationIndependent,
+              publicNote, _, isOnline, status, classLocalizationIndependent,
               _, _, _, _, _, guid = GetGuildRosterInfo(i)
 
         if isOnline then         
@@ -31,6 +31,7 @@ local function updateGuildRoster()
 
             table.insert(newRoster, {
                 name = name,
+                status = status,
                 level = level,
                 rankName = rankName,
                 classDisplayName = classDisplayName,
@@ -168,7 +169,7 @@ local function showGuildRoster(ldbObject)
     end
 
     local headerPadding = 10
-    local nameHorizontalPosition = 0
+    local nameHorizontalPosition = 10
     local levelHorizontalPosition = nameMaxWidth + 20
     local RankHorizontalPosition = levelHorizontalPosition+40
     local zoneorizontalPosition = RankHorizontalPosition+rankMaxWidth+10
@@ -253,6 +254,17 @@ local function showGuildRoster(ldbObject)
         local rowWidth = rosterFrame:GetWidth() - (2 * horizontalOffset)
         memberFrame:SetSize(rowWidth, 15)
         memberFrame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+
+        if member.status and (member.status == 1  or member.status == 2) then
+            local statusIcon = memberFrame:CreateTexture(nil, "ARTWORK")
+            statusIcon:SetPoint("LEFT", nameHorizontalPosition - 15, 0)
+            statusIcon:SetSize(15, 15)
+            if member.status == 1 then
+                statusIcon:SetTexture(FRIENDS_TEXTURE_AFK)
+            else
+                statusIcon:SetTexture(FRIENDS_TEXTURE_DND)
+            end
+        end
 
         local nameText = memberFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
         nameText:SetPoint("LEFT", nameHorizontalPosition, 0)
