@@ -293,7 +293,7 @@ local function showGuildRoster(ldbObject)
         publicNoteText:SetPoint("LEFT", publicNoteHorizontalPosition, 0)
         memberFrame.publicNoteText = publicNoteText
 
-        local classColor = C_ClassColor.GetClassColor(member.classLocalizationIndependent)
+        local classColor = RAID_CLASS_COLORS[member.classLocalizationIndependent]
         if classColor then
             nameText:SetTextColor(classColor.r, classColor.g, classColor.b)
         end
