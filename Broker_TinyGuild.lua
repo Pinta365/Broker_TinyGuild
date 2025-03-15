@@ -305,7 +305,16 @@ local function showGuildRoster(ldbObject)
             bgTexture:SetAllPoints(memberFrame)
         end
 
-        nameText:SetText(member.name)
+        local groupIndicatorName = member.name and string.sub(member.name, 1, string.find(member.name, "-") - 1)
+
+        if groupIndicatorName then
+            if UnitInParty(groupIndicatorName) or UnitInRaid(groupIndicatorName) then
+                nameText:SetText("*" .. member.name)
+            else
+                nameText:SetText(member.name)
+            end
+        end
+
         levelText:SetText(member.level)
         rankText:SetText(member.rankName)
         zoneText:SetText(member.zone)

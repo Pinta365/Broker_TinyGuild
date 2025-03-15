@@ -3,7 +3,7 @@
 ## Title: |cff45D388Broker_TinyGuild|r |cfd9b9b9bClassic|r
 ## Notes: Broker TinyGuild
 ## Author: Pinta365@Github
-## Version: 0.0.11
+## Version: 0.0.13
 ## SavedVariables: BrokerTinyGuildDB
 ## X-Curse-Project-ID: 1168039
 ## X-Wago-ID: aNDmRo6o
