@@ -1,9 +1,9 @@
-## Interface: 40401
+## Interface: 40402
 ## Name: Broker_TinyGuild
 ## Title: |cff45D388Broker_TinyGuild|r |cfd9b9b9bCataclysm|r
 ## Notes: Broker TinyGuild
 ## Author: Pinta365@Github
-## Version: 0.0.13
+## Version: 0.0.14
 ## SavedVariables: BrokerTinyGuildDB
 ## X-Curse-Project-ID: 1168039
 ## X-Wago-ID: aNDmRo6o
