@@ -3,11 +3,14 @@
 local addonName, AddonTable = ...
 local rosterFrame
 local tempFontString
+local optionsDropdownFrame
 
 local nameMaxWidth
 local rankMaxWidth
 local zoneMaxWidth
 local publicNoteMaxWidth
+local officerNoteMaxWidth
+local hasOfficerNotes  = false
 
 local function updateGuildRoster()
     local newRoster = {}
@@ -17,7 +20,7 @@ local function updateGuildRoster()
 
     for i = 1, totalToScan do
         local name, rankName, _, level, classDisplayName, zone,
-              publicNote, _, isOnline, status, classLocalizationIndependent,
+              publicNote, officerNote, isOnline, status, classLocalizationIndependent,
               _, _, _, _, _, guid = GetGuildRosterInfo(i)
 
         if isOnline then         
@@ -27,6 +30,13 @@ local function updateGuildRoster()
 
             if publicNote and #publicNote > 200 then
                 publicNote = string.sub(publicNote, 1, 197) .. "..."
+            end
+            if officerNote and #officerNote > 200 then
+                officerNote = string.sub(officerNote, 1, 197) .. "..."
+            end
+
+            if officerNote and officerNote ~= "" and hasOfficerNotes  == false then
+                hasOfficerNotes = true
             end
 
             table.insert(newRoster, {
@@ -39,6 +49,7 @@ local function updateGuildRoster()
                 factionName = factionName,
                 zone = zone,
                 publicNote = publicNote,
+                officerNote = officerNote,
             })
         end
     end
@@ -53,6 +64,7 @@ local function updateGuildRoster()
     rankMaxWidth = 20
     zoneMaxWidth = 35
     publicNoteMaxWidth = 200
+    officerNoteMaxWidth = 200
 
     for _, member in ipairs(newRoster) do
         tempFontString:SetText(member.name)
@@ -67,6 +79,11 @@ local function updateGuildRoster()
         tempFontString:SetText(member.publicNote)
         publicNoteMaxWidth = max(publicNoteMaxWidth, tempFontString:GetStringWidth())
 
+        if hasOfficerNotes and BrokerTinyGuildDB.showOfficerNotes then
+            tempFontString:SetText(member.officerNote or "")
+            officerNoteMaxWidth = math.max(officerNoteMaxWidth, tempFontString:GetStringWidth())
+        end
+        
         if member.factionName == "Alliance" then
             member.factionIcon = "Interface\\FriendsFrame\\PlusManz-Alliance.blp"
         elseif member.factionName == "Horde" then
@@ -79,7 +96,7 @@ local function updateGuildRoster()
     nameMaxWidth = nameMaxWidth + 15
     rankMaxWidth = rankMaxWidth + 15
     zoneMaxWidth = zoneMaxWidth + 15
-
+    
     return #newRoster, numGuildMembers
 end
 
@@ -161,6 +178,8 @@ local function showGuildRoster(ldbObject)
                 return (AddonTable.SortAscending and a.zone < b.zone) or (not AddonTable.SortAscending and a.zone > b.zone)
             elseif AddonTable.SortOrder == "note" then
                 return (AddonTable.SortAscending and a.publicNote < b.publicNote) or (not AddonTable.SortAscending and a.publicNote > b.publicNote)
+            elseif AddonTable.SortOrder == "officerNote" then
+                return (AddonTable.SortAscending and a.officerNote < b.officerNote) or (not AddonTable.SortAscending and a.officerNote > b.officerNote)
             else
                 return a.name < b.name
             end
@@ -168,20 +187,29 @@ local function showGuildRoster(ldbObject)
         showGuildRoster(ldbObject)
     end
 
+    AddonTable.currentLDBObject = ldbObject
+
     local headerPadding = 10
     local nameHorizontalPosition = 10
     local levelHorizontalPosition = nameMaxWidth + 20
     local RankHorizontalPosition = levelHorizontalPosition+40
-    local zoneorizontalPosition = RankHorizontalPosition+rankMaxWidth+10
-    local publicNoteHorizontalPosition = zoneorizontalPosition+10+zoneMaxWidth
-
+    local zoneHorizontalPosition = RankHorizontalPosition+rankMaxWidth+10
+    local publicNoteHorizontalPosition = zoneHorizontalPosition + zoneMaxWidth + 10
+    local officerNoteHorizontalPosition = 0
+    local totalWidth
+  
     local verticalOffset = 25
     local verticalIncrement = 15
     local horizontalOffset = 15
 
+    if hasOfficerNotes and BrokerTinyGuildDB.showOfficerNotes then
+        officerNoteHorizontalPosition = publicNoteHorizontalPosition + publicNoteMaxWidth + 10
+        totalWidth = officerNoteHorizontalPosition + officerNoteMaxWidth + headerPadding
+    else
+        totalWidth = publicNoteHorizontalPosition + publicNoteMaxWidth + headerPadding
+    end
     local totalHeight = #AddonTable.guildRoster * verticalIncrement + 60
-    local totalWidth = publicNoteHorizontalPosition + publicNoteMaxWidth + headerPadding
-
+    
     rosterFrame = CreateFrame("Frame", nil, UIParent, "TooltipBorderedFrameTemplate")
     rosterFrame:SetFrameStrata("HIGH")
     rosterFrame:SetSize(totalWidth, totalHeight)
@@ -230,7 +258,7 @@ local function showGuildRoster(ldbObject)
 
     local zoneHeader = CreateFrame("Button", nil, rosterFrame)
     local zoneHeaderText = zoneHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    zoneHeader:SetPoint("TOPLEFT", zoneorizontalPosition + headerPadding, -(verticalOffset - 15))
+    zoneHeader:SetPoint("TOPLEFT", zoneHorizontalPosition + headerPadding, -(verticalOffset - 15))
     zoneHeader:RegisterForClicks("LeftButtonUp")
     zoneHeaderText:SetPoint("LEFT", 0, 0)
     zoneHeaderText:SetText("Zone")
@@ -247,6 +275,18 @@ local function showGuildRoster(ldbObject)
     publicNoteHeader:SetSize(publicNoteHeaderText:GetStringWidth() + 10, 15)
     publicNoteHeader.sortType = "note"
     publicNoteHeader:SetScript("OnClick", sortByHeader)
+
+    if hasOfficerNotes and BrokerTinyGuildDB.showOfficerNotes then
+        local officerNoteHeader = CreateFrame("Button", nil, rosterFrame)
+        local officerNoteHeaderText = officerNoteHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        officerNoteHeader:SetPoint("TOPLEFT", officerNoteHorizontalPosition + headerPadding, -(verticalOffset - 15))
+        officerNoteHeader:RegisterForClicks("LeftButtonUp")
+        officerNoteHeaderText:SetPoint("LEFT", 0, 0)
+        officerNoteHeaderText:SetText("Officer Note")
+        officerNoteHeader:SetSize(officerNoteHeaderText:GetStringWidth() + 10, 15)
+        officerNoteHeader.sortType = "officerNote"
+        officerNoteHeader:SetScript("OnClick", sortByHeader)
+    end
 
     for i, member in ipairs(AddonTable.guildRoster) do
         local memberFrame = CreateFrame("Button", nil, rosterFrame)
@@ -286,12 +326,19 @@ local function showGuildRoster(ldbObject)
         memberFrame.rankText = rankText
 
         local zoneText = memberFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-        zoneText:SetPoint("LEFT", zoneorizontalPosition, 0)
+        zoneText:SetPoint("LEFT", zoneHorizontalPosition, 0)
         memberFrame.zoneText = zoneText
 
         local publicNoteText = memberFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
         publicNoteText:SetPoint("LEFT", publicNoteHorizontalPosition, 0)
         memberFrame.publicNoteText = publicNoteText
+
+        if hasOfficerNotes and BrokerTinyGuildDB.showOfficerNotes then
+            local officerNoteText = memberFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+            officerNoteText:SetPoint("LEFT", officerNoteHorizontalPosition, 0)
+            officerNoteText:SetText(member.officerNote)
+            memberFrame.officerNoteText = officerNoteText
+        end
 
         local classColor = RAID_CLASS_COLORS[member.classLocalizationIndependent]
         if classColor then
@@ -346,12 +393,52 @@ local function showGuildRoster(ldbObject)
         verticalOffset = verticalOffset + verticalIncrement
     end
     
-    local footerText = rosterFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-        footerText:SetPoint("BOTTOMRIGHT", rosterFrame, "BOTTOMRIGHT", -10, 10)
-        footerText:SetText("|cFFAAAAAALeft-Click to whisper | Right-Click to invite|r")
-        footerText:SetJustifyH("RIGHT")
-        rosterFrame.footerText = footerText
+    local footer = CreateFrame("Frame", nil, rosterFrame)
+    footer:SetPoint("BOTTOMLEFT", rosterFrame, "BOTTOMLEFT", 10, 10)
+    footer:SetPoint("BOTTOMRIGHT", rosterFrame, "BOTTOMRIGHT", -10, 10)
+    footer:SetHeight(20)
+
+    local footerHint = footer:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    footerHint:SetPoint("LEFT")
+    footerHint:SetText("|cFFAAAAAALeft-Click to whisper | Right-Click to invite|r")
+
+    local optionsButton = CreateFrame("Button", nil, footer)
+    optionsButton:SetPoint("RIGHT")
+    optionsButton:SetSize(60, 20)
+    
+    local optionsText = optionsButton:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    optionsText:SetPoint("CENTER")
+    optionsText:SetText("Options")
+    optionsText:SetJustifyH("RIGHT")
+
+    optionsButton:SetScript("OnClick", function(self, button)
+        optionsDropdownFrame = CreateFrame("Frame", "BrokerTinyGuildOptionsDropdown", UIParent, "UIDropDownMenuTemplate")
+
+        local isTop = select(2, rosterFrame:GetCenter()) > UIParent:GetHeight() / 2
+        local anchorPoint = isTop and "TOPLEFT" or "BOTTOMLEFT"
+        local relativePoint = isTop and "BOTTOMLEFT" or "TOPLEFT"
         
+        optionsDropdownFrame:SetPoint(anchorPoint, self, relativePoint)
+
+        UIDropDownMenu_Initialize(optionsDropdownFrame, function(self, level, menuList)
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = "Show Officer Notes"
+            info.checked = BrokerTinyGuildDB.showOfficerNotes
+            info.isNotRadio = true
+            info.keepShownOnClick = false
+            info.func = function()
+                BrokerTinyGuildDB.showOfficerNotes = not BrokerTinyGuildDB.showOfficerNotes
+                if AddonTable.currentLDBObject then
+                    showGuildRoster(AddonTable.currentLDBObject)
+                end
+            end
+            UIDropDownMenu_AddButton(info)
+        end, "MENU")
+
+        ToggleDropDownMenu(1, nil, optionsDropdownFrame, self, 0, 0)
+        optionsDropdownFrame:SetClampedToScreen(true)
+    end)
+
     rosterFrame:Show()
     rosterFrame:SetClampedToScreen(true)
 
@@ -367,6 +454,9 @@ local function showGuildRoster(ldbObject)
                 if not rosterFrame:IsMouseOver() and 
                 not GameTooltip:IsMouseOver() then   
                     rosterFrame:Hide()
+                    if optionsDropdownFrame then
+                        optionsDropdownFrame:Hide()
+                    end
                 end
             end)
         end
@@ -404,6 +494,11 @@ local function initTinyGuild()
     AddonTable.guildRoster = {}
     tempFontString = UIParent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     C_GuildInfo.GuildRoster()
+
+     -- Initialize saved variables
+     BrokerTinyGuildDB = BrokerTinyGuildDB or {
+        showOfficerNotes = true
+    }
 end
 
 local function onEvent(self, event, ...)
