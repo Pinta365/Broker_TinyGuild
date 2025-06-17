@@ -1,9 +1,9 @@
-## Interface: 110105
+## Interface: 110105, 110107
 ## Name: Broker_TinyGuild
 ## Title: |cff45D388Broker_TinyGuild|r
 ## Notes: Broker TinyGuild
 ## Author: Pinta365@Github
-## Version: 0.0.17
+## Version: 0.0.18
 ## SavedVariables: BrokerTinyGuildDB
 ## X-Curse-Project-ID: 1168039
 ## X-Wago-ID: aNDmRo6o
