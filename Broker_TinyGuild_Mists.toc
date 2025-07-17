@@ -1,0 +1,12 @@
+## Interface: 50500
+## Name: Broker_TinyGuild
+## Title: |cff45D388Broker_TinyGuild|r |cfd9b9b9bMists|r
+## Notes: Broker TinyGuild
+## Author: Pinta365@Github
+## Version: 0.0.19
+## SavedVariables: BrokerTinyGuildDB
+## X-Curse-Project-ID: 1168039
+## X-Wago-ID: aNDmRo6o
+## IconTexture: Interface\AddOns\Broker_TinyGuild\Textures\pinta
+
+embeds.xml
