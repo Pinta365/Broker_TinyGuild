@@ -1,12 +1,21 @@
-## Interface: 110107, 110200
+## Interface: 110200
 ## Name: Broker_TinyGuild
-## Title: |cff45D388Broker_TinyGuild|r
-## Notes: Broker TinyGuild
+## Title: |cff45D388TinyGuild|r
+## Notes: View and interact with your guild's online members
 ## Author: Pinta365@Github
 ## Version: 1.0.0
 ## SavedVariables: BrokerTinyGuildDB
 ## X-Curse-Project-ID: 1168039
 ## X-Wago-ID: aNDmRo6o
 ## IconTexture: Interface\AddOns\Broker_TinyGuild\Textures\pinta
+## Category: Data Broker
+## Category-deDE: Datenbroker
+## Category-esES: Intermediario de Datos
+## Category-esMX: Intermediario de Datos
+## Category-frFR: Courtier de Données
+## Category-ptBR: Corretor de Dados
+## Category-ruRU: Посредник данных
+## Category-zhCN: 数据管理
+## Category-zhTW: 資料管理
 
 embeds.xml

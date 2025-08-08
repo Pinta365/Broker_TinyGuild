@@ -1,7 +1,7 @@
 ## Interface: 50500
 ## Name: Broker_TinyGuild
-## Title: |cff45D388Broker_TinyGuild|r |cfd9b9b9bMists|r
-## Notes: Broker TinyGuild
+## Title: |cff45D388TinyGuild|r |cfd9b9b9bMists|r
+## Notes: View and interact with your guild's online members
 ## Author: Pinta365@Github
 ## Version: 1.0.0
 ## SavedVariables: BrokerTinyGuildDB
