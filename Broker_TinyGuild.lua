@@ -14,43 +14,51 @@ local hasOfficerNotes  = false
 
 local function updateGuildRoster()
     local newRoster = {}
-    local numGuildMembers, numOnlineGuildMembers = GetNumGuildMembers()
+    local numGuildMembers, _ = GetNumGuildMembers()
     local showOffline = GetGuildRosterShowOffline()
-    local totalToScan = showOffline and numGuildMembers or numOnlineGuildMembers
-
-    for i = 1, totalToScan do
+    for i = 1, numGuildMembers do
         local name, rankName, _, level, classDisplayName, zone,
               publicNote, officerNote, isOnline, status, classLocalizationIndependent,
               _, _, _, _, _, guid = GetGuildRosterInfo(i)
 
-        if isOnline then         
-            local raceId = guid and C_PlayerInfo.GetRace(PlayerLocation:CreateFromGUID(guid));
-            local factionInfo = raceId and C_CreatureInfo.GetFactionInfo(raceId)
-            local factionName = factionInfo and factionInfo.groupTag
-
-            if publicNote and #publicNote > 200 then
-                publicNote = string.sub(publicNote, 1, 197) .. "..."
+        if (isOnline or showOffline) and name then
+            local isDuplicate = false
+            for _, existingMember in ipairs(newRoster) do
+                if existingMember.name == name then
+                    isDuplicate = true
+                    break
+                end
             end
-            if officerNote and #officerNote > 200 then
-                officerNote = string.sub(officerNote, 1, 197) .. "..."
-            end
+            
+            if not isDuplicate then
+                local raceId = guid and C_PlayerInfo.GetRace(PlayerLocation:CreateFromGUID(guid));
+                local factionInfo = raceId and C_CreatureInfo.GetFactionInfo(raceId)
+                local factionName = factionInfo and factionInfo.groupTag
 
-            if officerNote and officerNote ~= "" and hasOfficerNotes  == false then
-                hasOfficerNotes = true
-            end
+                if publicNote and #publicNote > 200 then
+                    publicNote = string.sub(publicNote, 1, 197) .. "..."
+                end
+                if officerNote and #officerNote > 200 then
+                    officerNote = string.sub(officerNote, 1, 197) .. "..."
+                end
 
-            table.insert(newRoster, {
-                name = name,
-                status = status,
-                level = level,
-                rankName = rankName,
-                classDisplayName = classDisplayName,
-                classLocalizationIndependent = classLocalizationIndependent,
-                factionName = factionName,
-                zone = zone,
-                publicNote = publicNote,
-                officerNote = officerNote,
-            })
+                if officerNote and officerNote ~= "" and hasOfficerNotes  == false then
+                    hasOfficerNotes = true
+                end
+
+                table.insert(newRoster, {
+                    name = name,
+                    status = status,
+                    level = level,
+                    rankName = rankName,
+                    classDisplayName = classDisplayName,
+                    classLocalizationIndependent = classLocalizationIndependent,
+                    factionName = factionName,
+                    zone = zone,
+                    publicNote = publicNote,
+                    officerNote = officerNote,
+                })
+            end
         end
     end
 
