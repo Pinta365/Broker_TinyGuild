@@ -1,6 +1,14 @@
 -- BrokerTinyGuild.lua
 
 local addonName, AddonTable = ...
+
+local function addTimerunningIcon(name)
+    if name and name ~= "" then
+        return "|TInterface\\AddOns\\Broker_TinyFriends\\Textures\\timerunning-glues-icon-small.png:9:9|t" .. name
+    end
+    return name
+end
+
 local rosterFrame
 local tempFontString
 local optionsDropdownFrame
@@ -16,6 +24,15 @@ local function updateGuildRoster()
     local newRoster = {}
     local numGuildMembers, _ = GetNumGuildMembers()
     local showOffline = GetGuildRosterShowOffline()
+    
+    local communityMembers = {}
+    if IsInGuild() and C_Club and C_Club.GetGuildClubId and CommunitiesUtil and CommunitiesUtil.GetAndSortMemberInfo then
+        local clubId = C_Club.GetGuildClubId()
+        if clubId then
+            communityMembers = CommunitiesUtil.GetAndSortMemberInfo(clubId, nil) or {}
+        end
+    end
+    
     for i = 1, numGuildMembers do
         local name, rankName, _, level, classDisplayName, zone,
               publicNote, officerNote, isOnline, status, classLocalizationIndependent,
@@ -46,6 +63,15 @@ local function updateGuildRoster()
                     hasOfficerNotes = true
                 end
 
+                local isInTimerunning = false
+                
+                for _, memberInfo in ipairs(communityMembers) do
+                    if memberInfo.guid == guid and memberInfo.timerunningSeasonID then
+                        isInTimerunning = true
+                        break
+                    end
+                end
+
                 table.insert(newRoster, {
                     name = name,
                     status = status,
@@ -57,6 +83,7 @@ local function updateGuildRoster()
                     zone = zone,
                     publicNote = publicNote,
                     officerNote = officerNote,
+                    isInTimerunning = isInTimerunning,
                 })
             end
         end
@@ -361,12 +388,17 @@ local function showGuildRoster(ldbObject)
         end
 
         local groupIndicatorName = member.name and string.sub(member.name, 1, string.find(member.name, "-") - 1)
+        local displayName = member.name
+
+        if member.isInTimerunning then
+            displayName = addTimerunningIcon(displayName)
+        end
 
         if groupIndicatorName then
             if UnitInParty(groupIndicatorName) or UnitInRaid(groupIndicatorName) then
-                nameText:SetText("*" .. member.name)
+                nameText:SetText("*" .. displayName)
             else
-                nameText:SetText(member.name)
+                nameText:SetText(displayName)
             end
         end
 
@@ -441,6 +473,17 @@ local function showGuildRoster(ldbObject)
                 end
             end
             UIDropDownMenu_AddButton(info)
+            
+            local info2 = UIDropDownMenu_CreateInfo()
+            info2.text = "Debug Timerunning"
+            info2.checked = BrokerTinyGuildDB.debug
+            info2.isNotRadio = true
+            info2.keepShownOnClick = false
+            info2.func = function()
+                BrokerTinyGuildDB.debug = not BrokerTinyGuildDB.debug
+                print("Broker_TinyGuild: Debug mode " .. (BrokerTinyGuildDB.debug and "enabled" or "disabled"))
+            end
+            UIDropDownMenu_AddButton(info2)
         end, "MENU")
 
         ToggleDropDownMenu(1, nil, optionsDropdownFrame, self, 0, 0)
@@ -505,7 +548,8 @@ local function initTinyGuild()
 
      -- Initialize saved variables
      BrokerTinyGuildDB = BrokerTinyGuildDB or {
-        showOfficerNotes = true
+        showOfficerNotes = true,
+        debug = false
     }
 end
 

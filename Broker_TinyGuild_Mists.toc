@@ -1,4 +1,4 @@
-## Interface: 50500
+## Interface: 50501
 ## Name: Broker_TinyGuild
 ## Title: |cff45D388TinyGuild|r |cfd9b9b9bMists|r
 ## Notes: View and interact with your guild's online members
