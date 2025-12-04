@@ -424,7 +424,7 @@ local function showGuildRoster(ldbObject)
 
         memberFrame:SetScript("OnClick", function(self, button)
             if button == "LeftButton" then
-                ChatFrame_SendTell(member.name)
+                ChatFrameUtil.SendTell(member.name)
             elseif button == "RightButton" then
                 C_PartyInfo.InviteUnit(member.name)
             end
