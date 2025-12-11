@@ -12,6 +12,7 @@ end
 local rosterFrame
 local tempFontString
 local optionsDropdownFrame
+local hideTimer
 
 local nameMaxWidth
 local rankMaxWidth
@@ -139,6 +140,35 @@ local function anchorRosterFrame(ldbObject)
     local isTop = select(2, ldbObject:GetCenter()) > UIParent:GetHeight() / 2
     rosterFrame:ClearAllPoints()
     rosterFrame:SetPoint(isTop and "TOP" or "BOTTOM", ldbObject, isTop and "BOTTOM" or "TOP", 0, 0)
+end
+
+local function cancelHideTimer()
+    if hideTimer then
+        hideTimer:Cancel()
+        hideTimer = nil
+    end
+end
+
+local function scheduleHide()
+    cancelHideTimer()
+    hideTimer = C_Timer.NewTimer(0.2, function()
+        if rosterFrame and rosterFrame:IsShown() then
+            local isOverFrame = rosterFrame:IsMouseOver()
+            
+            local isOverOptions = false
+            if optionsDropdownFrame and optionsDropdownFrame:IsShown() then
+                isOverOptions = optionsDropdownFrame:IsMouseOver()
+            end
+            
+            if not isOverFrame and not isOverOptions then
+                rosterFrame:Hide()
+                if optionsDropdownFrame then
+                    optionsDropdownFrame:Hide()
+                end
+            end
+        end
+        hideTimer = nil
+    end)
 end
 
 local function updateBrokerText()
@@ -450,6 +480,14 @@ local function showGuildRoster(ldbObject)
     optionsText:SetPoint("CENTER")
     optionsText:SetText("Options")
     optionsText:SetJustifyH("RIGHT")
+    
+    optionsButton:SetScript("OnEnter", function()
+        cancelHideTimer()
+    end)
+    
+    optionsButton:SetScript("OnLeave", function()
+        scheduleHide()
+    end)
 
     optionsButton:SetScript("OnClick", function(self, button)
         optionsDropdownFrame = CreateFrame("Frame", "BrokerTinyGuildOptionsDropdown", UIParent, "UIDropDownMenuTemplate")
@@ -488,29 +526,34 @@ local function showGuildRoster(ldbObject)
 
         ToggleDropDownMenu(1, nil, optionsDropdownFrame, self, 0, 0)
         optionsDropdownFrame:SetClampedToScreen(true)
+        
+        -- Prevent hiding when interacting with options dropdown
+        if optionsDropdownFrame then
+            optionsDropdownFrame:HookScript("OnEnter", function()
+                cancelHideTimer()
+            end)
+            optionsDropdownFrame:HookScript("OnLeave", function()
+                scheduleHide()
+            end)
+        end
     end)
 
+    cancelHideTimer()
     rosterFrame:Show()
     rosterFrame:SetClampedToScreen(true)
 
     anchorRosterFrame(ldbObject)
 
     rosterFrame:HookScript("OnEnter", function()
-        GameTooltip:Show()
+        cancelHideTimer()
     end)
 
     rosterFrame:HookScript("OnLeave", function()
-        if not rosterFrame:IsMouseOver() and not GameTooltip:IsMouseOver() then
-            C_Timer.After(0.1, function()
-                if not rosterFrame:IsMouseOver() and 
-                not GameTooltip:IsMouseOver() then   
-                    rosterFrame:Hide()
-                    if optionsDropdownFrame then
-                        optionsDropdownFrame:Hide()
-                    end
-                end
-            end)
-        end
+        scheduleHide()
+    end)
+    
+    rosterFrame:HookScript("OnHide", function()
+        cancelHideTimer()
     end)
 end
 
@@ -526,15 +569,14 @@ local function initBroker()
         end,
 
         OnEnter = function(self)
+            cancelHideTimer()
             if IsInGuild() and AddonTable.online then
                 showGuildRoster(self)
             end
         end,
 
         OnLeave = function(self)
-            if IsInGuild() and rosterFrame and not rosterFrame:IsMouseOver() then
-                rosterFrame:Hide()
-            end
+            scheduleHide()
         end,
     })
 end
