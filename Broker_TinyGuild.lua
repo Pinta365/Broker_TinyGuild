@@ -24,7 +24,6 @@ local hasOfficerNotes  = false
 local function updateGuildRoster()
     local newRoster = {}
     local numGuildMembers, _ = GetNumGuildMembers()
-    local showOffline = GetGuildRosterShowOffline()
     
     local communityMembers = {}
     if IsInGuild() and C_Club and C_Club.GetGuildClubId and CommunitiesUtil and CommunitiesUtil.GetAndSortMemberInfo then
@@ -39,7 +38,7 @@ local function updateGuildRoster()
               publicNote, officerNote, isOnline, status, classLocalizationIndependent,
               _, _, _, _, _, guid = GetGuildRosterInfo(i)
 
-        if (isOnline or showOffline) and name then
+        if (isOnline) and name then
             local isDuplicate = false
             for _, existingMember in ipairs(newRoster) do
                 if existingMember.name == name then
