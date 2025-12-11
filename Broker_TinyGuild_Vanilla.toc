@@ -1,4 +1,4 @@
-## Interface: 11507
+## Interface: 11508
 ## Name: Broker_TinyGuild
 ## Title: |cff45D388TinyGuild|r |cfd9b9b9bClassic|r
 ## Notes: View and interact with your guild's online members
