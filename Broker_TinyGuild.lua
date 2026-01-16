@@ -2,6 +2,13 @@
 
 local addonName, AddonTable = ...
 
+-- Debug helper function for future use
+local function debugPrint(message)
+    if BrokerTinyGuildDB and BrokerTinyGuildDB.debug then
+        print("Broker_TinyGuild: " .. tostring(message))
+    end
+end
+
 local function addTimerunningIcon(name)
     if name and name ~= "" then
         return "|TInterface\\AddOns\\Broker_TinyFriends\\Textures\\timerunning-glues-icon-small.png:9:9|t" .. name
@@ -512,7 +519,7 @@ local function showGuildRoster(ldbObject)
             UIDropDownMenu_AddButton(info)
             
             local info2 = UIDropDownMenu_CreateInfo()
-            info2.text = "Debug Timerunning"
+            info2.text = "Show Debug Messages"
             info2.checked = BrokerTinyGuildDB.debug
             info2.isNotRadio = true
             info2.keepShownOnClick = false
