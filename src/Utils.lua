@@ -18,3 +18,23 @@ function AddonTable.addTimerunningIcon(name)
     return name
 end
 
+-- Sanitize name to remove duplicate realm suffixes (e.g., "Name-Realm-Realm-Realm" -> "Name-Realm")
+-- This is to prevent duplicate realm names when we get faulty data from the API.
+-- Some rainy day I will find the root cause of this and fix it.
+function AddonTable.sanitizeName(name)
+    if not name or name == "" then
+        return name
+    end
+    
+    local parts = {}
+    for part in name:gmatch("([^-]+)") do
+        table.insert(parts, part)
+    end
+    
+    if #parts >= 2 then
+        return parts[1] .. "-" .. parts[2]
+    end
+
+    return name
+end
+

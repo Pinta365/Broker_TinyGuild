@@ -31,6 +31,7 @@ function AddonTable.updateGuildRoster()
               _, _, _, _, _, guid = GetGuildRosterInfo(i)
 
         if (isOnline) and name then
+            name = AddonTable.sanitizeName(name)
             if Ambiguate then
                 name = Ambiguate(name, "none")
             end
