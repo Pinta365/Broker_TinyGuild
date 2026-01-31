@@ -3,6 +3,15 @@
 
 local addonName, AddonTable = ...
 
+local function openWhisper(targetName)
+    if not targetName or targetName == "" then return end
+    if ChatFrameUtil and ChatFrameUtil.SendTell then
+        ChatFrameUtil.SendTell(targetName)
+    else
+        ChatFrame_OpenChat("/w " .. targetName .. " ")
+    end
+end
+
 -- Mouseover hide timer
 AddonTable.hideTimer = nil
 
@@ -289,7 +298,7 @@ function AddonTable.showGuildRoster(ldbObject)
 
         memberFrame:SetScript("OnClick", function(self, button)
             if button == "LeftButton" then
-                ChatFrameUtil.SendTell(member.name)
+                openWhisper(member.name)
             elseif button == "RightButton" then
                 C_PartyInfo.InviteUnit(member.name)
             end
