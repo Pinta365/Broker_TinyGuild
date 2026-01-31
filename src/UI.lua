@@ -92,7 +92,7 @@ function AddonTable.showGuildRoster(ldbObject)
     end
     local totalHeight = #AddonTable.guildRoster * verticalIncrement + 60
     
-    AddonTable.rosterFrame = CreateFrame("Frame", nil, UIParent, "TooltipBorderedFrameTemplate")
+    AddonTable.rosterFrame = CreateFrame("Frame", nil, BrokerTinyGuild, "TooltipBorderedFrameTemplate")
     AddonTable.rosterFrame:SetFrameStrata("HIGH")
     AddonTable.rosterFrame:SetSize(totalWidth, totalHeight)
     

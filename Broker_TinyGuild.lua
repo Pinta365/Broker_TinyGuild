@@ -7,7 +7,7 @@ local function initTinyGuild()
     AddonTable.SortOrder = "name"
     AddonTable.SortAscending = true
     AddonTable.guildRoster = {}
-    AddonTable.tempFontString = UIParent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    AddonTable.tempFontString = BrokerTinyGuild:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     C_GuildInfo.GuildRoster()
     
     -- Initialize saved variables
@@ -22,6 +22,8 @@ local function onEvent(self, event, ...)
     elseif event == "GUILD_MOTD" then
         AddonTable.updateGMOTD()
     elseif event == "PLAYER_ENTERING_WORLD" then
+        local scaleMult = BrokerTinyGuildDB and BrokerTinyGuildDB.scale or 1
+        self:SetScale(UIParent:GetScale() * scaleMult)
         -- Dirty fix for unguilded, IsInGuild() is not up to speed right away.
         C_Timer.NewTimer(4, function()
             if not IsInGuild() then

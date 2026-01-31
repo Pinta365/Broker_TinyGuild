@@ -7,7 +7,8 @@ local addonName, AddonTable = ...
 AddonTable.defaultSettings = {
     showOfficerNotes = true,
     debug = false,
-    backgroundOpacity = 0.8  -- Default tooltip transparency (0.0 = transparent, 1.0 = opaque)
+    backgroundOpacity = 0.8,  -- Default tooltip transparency (0.0 = transparent, 1.0 = opaque)
+    scale = 1.0               -- Panel scale multiplier (1.0 = match UI scale, 0.5–1.5 = 50%–150%)
 }
 
 -- Initialize saved variables
