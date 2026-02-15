@@ -160,10 +160,63 @@ function AddonTable.showGuildRoster(ldbObject)
         createSortHeader("Officer Note", "officerNote", officerNoteHorizontalPosition)
     end
 
+    local headerAreaHeight = verticalOffset
+    local footerHeight = 30
+    local contentHeight = #AddonTable.guildRoster * verticalIncrement
+    local scrollbarWidth = 16
+    local maxScrollArea = (UIParent:GetHeight() * 0.6) - headerAreaHeight - footerHeight
+    local needsScroll = contentHeight > maxScrollArea
+    local scrollAreaHeight = needsScroll and maxScrollArea or contentHeight
+
+    if needsScroll then
+        totalWidth = totalWidth + scrollbarWidth
+    end
+
+    totalHeight = headerAreaHeight + scrollAreaHeight + footerHeight
+    AddonTable.rosterFrame:SetSize(totalWidth, totalHeight)
+
+    local scrollFrame = CreateFrame("ScrollFrame", nil, AddonTable.rosterFrame)
+    scrollFrame:SetPoint("TOPLEFT", 0, -headerAreaHeight)
+    scrollFrame:SetPoint("TOPRIGHT", needsScroll and -scrollbarWidth or 0, -headerAreaHeight)
+    scrollFrame:SetHeight(scrollAreaHeight)
+
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetWidth(totalWidth - (needsScroll and scrollbarWidth or 0))
+    scrollChild:SetHeight(contentHeight)
+    scrollFrame:SetScrollChild(scrollChild)
+
+    if needsScroll then
+        local scrollbar = CreateFrame("Slider", nil, AddonTable.rosterFrame)
+        scrollbar:SetPoint("TOPRIGHT", -4, -headerAreaHeight)
+        scrollbar:SetPoint("BOTTOMRIGHT", -4, footerHeight)
+        scrollbar:SetWidth(scrollbarWidth)
+        scrollbar:SetMinMaxValues(0, contentHeight - scrollAreaHeight)
+        scrollbar:SetValueStep(verticalIncrement)
+        scrollbar:SetObeyStepOnDrag(true)
+        scrollbar:SetValue(0)
+
+        local thumbTexture = scrollbar:CreateTexture(nil, "ARTWORK")
+        thumbTexture:SetColorTexture(0.5, 0.5, 0.5, 0.7)
+        thumbTexture:SetSize(scrollbarWidth - 4, 40)
+        scrollbar:SetThumbTexture(thumbTexture)
+
+        scrollbar:SetScript("OnValueChanged", function(self, value)
+            scrollFrame:SetVerticalScroll(value)
+        end)
+
+        scrollFrame:EnableMouseWheel(true)
+        scrollFrame:SetScript("OnMouseWheel", function(self, delta)
+            local current = scrollbar:GetValue()
+            local step = verticalIncrement * 3
+            scrollbar:SetValue(current - (delta * step))
+        end)
+    end
+
+    local rowOffset = 0
     for i, member in ipairs(AddonTable.guildRoster) do
-        local memberFrame = CreateFrame("Button", nil, AddonTable.rosterFrame)
-        memberFrame:SetPoint("TOPLEFT", horizontalOffset, -verticalOffset)
-        local rowWidth = AddonTable.rosterFrame:GetWidth() - (2 * horizontalOffset)
+        local memberFrame = CreateFrame("Button", nil, scrollChild)
+        memberFrame:SetPoint("TOPLEFT", horizontalOffset, -rowOffset)
+        local rowWidth = scrollChild:GetWidth() - (2 * horizontalOffset)
         memberFrame:SetSize(rowWidth, 15)
         memberFrame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
@@ -237,7 +290,7 @@ function AddonTable.showGuildRoster(ldbObject)
                 end
             end
         end
-        
+
         local displayName = member.name
 
         if member.isInTimerunning then
@@ -263,7 +316,7 @@ function AddonTable.showGuildRoster(ldbObject)
         highlight:SetTexture("Interface\\Buttons\\WHITE8X8")
         highlight:SetVertexColor(0.2, 0.2, 0.2, 1)
         highlight:SetAllPoints(memberFrame)
-        highlight:Hide() 
+        highlight:Hide()
         memberFrame.highlight = highlight
 
         memberFrame:SetScript("OnEnter", function(self)
@@ -282,9 +335,9 @@ function AddonTable.showGuildRoster(ldbObject)
             end
         end)
 
-        verticalOffset = verticalOffset + verticalIncrement
+        rowOffset = rowOffset + verticalIncrement
     end
-    
+
     local footer = CreateFrame("Frame", nil, AddonTable.rosterFrame)
     footer:SetPoint("BOTTOMLEFT", AddonTable.rosterFrame, "BOTTOMLEFT", 10, 10)
     footer:SetPoint("BOTTOMRIGHT", AddonTable.rosterFrame, "BOTTOMRIGHT", -10, 10)
@@ -297,16 +350,16 @@ function AddonTable.showGuildRoster(ldbObject)
     local optionsButton = CreateFrame("Button", nil, footer)
     optionsButton:SetPoint("RIGHT")
     optionsButton:SetSize(60, 20)
-    
+
     local optionsText = optionsButton:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     optionsText:SetPoint("CENTER")
     optionsText:SetText("Options")
     optionsText:SetJustifyH("RIGHT")
-    
+
     optionsButton:SetScript("OnEnter", function()
         AddonTable.cancelHideTimer()
     end)
-    
+
     optionsButton:SetScript("OnLeave", function()
         AddonTable.scheduleHide()
     end)
@@ -338,7 +391,7 @@ function AddonTable.showGuildRoster(ldbObject)
     AddonTable.rosterFrame:HookScript("OnLeave", function()
         AddonTable.scheduleHide()
     end)
-    
+
     AddonTable.rosterFrame:HookScript("OnHide", function()
         AddonTable.cancelHideTimer()
     end)
