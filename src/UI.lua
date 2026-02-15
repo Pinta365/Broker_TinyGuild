@@ -120,66 +120,44 @@ function AddonTable.showGuildRoster(ldbObject)
         AddonTable.rosterFrame:SetSize(totalWidth, totalHeight)
     end
 
-    local nameHeader = CreateFrame("Button", nil, AddonTable.rosterFrame)
-    local nameHeaderText = nameHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    nameHeader:SetPoint("TOPLEFT", nameHorizontalPosition + headerPadding, -(verticalOffset - 15))
-    nameHeader:RegisterForClicks("LeftButtonUp")
-    nameHeaderText:SetPoint("LEFT", 0, 0)
-    nameHeaderText:SetText("Name")
-    nameHeader:SetSize(nameHeaderText:GetStringWidth() + 10, 15)
-    nameHeader.sortType = "name"
-    nameHeader:SetScript("OnClick", sortByHeader)
+    local function createSortHeader(label, sortType, xPos)
+        local header = CreateFrame("Button", nil, AddonTable.rosterFrame)
+        local headerText = header:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+        header:SetPoint("TOPLEFT", xPos + headerPadding, -(verticalOffset - 15))
+        header:RegisterForClicks("LeftButtonUp")
+        headerText:SetPoint("LEFT", 0, 0)
+        headerText:SetText(label)
+        header.sortType = sortType
+        header:SetScript("OnClick", sortByHeader)
 
-    local levelHeader = CreateFrame("Button", nil, AddonTable.rosterFrame)
-    local levelHeaderText = levelHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    levelHeader:SetPoint("TOPLEFT", levelHorizontalPosition + headerPadding, -(verticalOffset - 15))
-    levelHeader:RegisterForClicks("LeftButtonUp")
-    levelHeaderText:SetPoint("LEFT", 0, 0)
-    levelHeaderText:SetText("Level")
-    levelHeader:SetSize(levelHeaderText:GetStringWidth() + 10, 15)
-    levelHeader.sortType = "level"
-    levelHeader:SetScript("OnClick", sortByHeader)
+        local arrow = header:CreateTexture(nil, "ARTWORK")
+        arrow:SetAtlas("auctionhouse-ui-sortarrow")
+        arrow:SetSize(9, 9)
+        arrow:SetPoint("LEFT", headerText, "RIGHT", 3, 0)
 
-    local RankHeader = CreateFrame("Button", nil, AddonTable.rosterFrame)
-    local RankHeaderText = RankHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    RankHeader:SetPoint("TOPLEFT", RankHorizontalPosition + headerPadding, -(verticalOffset - 15))
-    RankHeader:RegisterForClicks("LeftButtonUp")
-    RankHeaderText:SetPoint("LEFT", 0, 0)
-    RankHeaderText:SetText("Rank")
-    RankHeader:SetSize(RankHeaderText:GetStringWidth() + 10, 15)
-    RankHeader.sortType = "rank"
-    RankHeader:SetScript("OnClick", sortByHeader)
+        if AddonTable.SortOrder == sortType then
+            arrow:Show()
+            if AddonTable.SortAscending then
+                arrow:SetTexCoord(0, 1, 1, 0)
+            else
+                arrow:SetTexCoord(0, 1, 0, 1)
+            end
+        else
+            arrow:Hide()
+        end
 
-    local zoneHeader = CreateFrame("Button", nil, AddonTable.rosterFrame)
-    local zoneHeaderText = zoneHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    zoneHeader:SetPoint("TOPLEFT", zoneHorizontalPosition + headerPadding, -(verticalOffset - 15))
-    zoneHeader:RegisterForClicks("LeftButtonUp")
-    zoneHeaderText:SetPoint("LEFT", 0, 0)
-    zoneHeaderText:SetText("Zone")
-    zoneHeader:SetSize(zoneHeaderText:GetStringWidth() + 10, 15)
-    zoneHeader.sortType = "zone"
-    zoneHeader:SetScript("OnClick", sortByHeader)
+        header:SetSize(headerText:GetStringWidth() + 20, 15)
+        return header
+    end
 
-    local publicNoteHeader = CreateFrame("Button", nil, AddonTable.rosterFrame)
-    local publicNoteHeaderText = publicNoteHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    publicNoteHeader:SetPoint("TOPLEFT", publicNoteHorizontalPosition + headerPadding, -(verticalOffset - 15))
-    publicNoteHeader:RegisterForClicks("LeftButtonUp")
-    publicNoteHeaderText:SetPoint("LEFT", 0, 0)
-    publicNoteHeaderText:SetText("Public Note")
-    publicNoteHeader:SetSize(publicNoteHeaderText:GetStringWidth() + 10, 15)
-    publicNoteHeader.sortType = "note"
-    publicNoteHeader:SetScript("OnClick", sortByHeader)
+    createSortHeader("Name", "name", nameHorizontalPosition)
+    createSortHeader("Level", "level", levelHorizontalPosition)
+    createSortHeader("Rank", "rank", RankHorizontalPosition)
+    createSortHeader("Zone", "zone", zoneHorizontalPosition)
+    createSortHeader("Public Note", "note", publicNoteHorizontalPosition)
 
     if AddonTable.hasOfficerNotes and BrokerTinyGuildDB.showOfficerNotes then
-        local officerNoteHeader = CreateFrame("Button", nil, AddonTable.rosterFrame)
-        local officerNoteHeaderText = officerNoteHeader:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-        officerNoteHeader:SetPoint("TOPLEFT", officerNoteHorizontalPosition + headerPadding, -(verticalOffset - 15))
-        officerNoteHeader:RegisterForClicks("LeftButtonUp")
-        officerNoteHeaderText:SetPoint("LEFT", 0, 0)
-        officerNoteHeaderText:SetText("Officer Note")
-        officerNoteHeader:SetSize(officerNoteHeaderText:GetStringWidth() + 10, 15)
-        officerNoteHeader.sortType = "officerNote"
-        officerNoteHeader:SetScript("OnClick", sortByHeader)
+        createSortHeader("Officer Note", "officerNote", officerNoteHorizontalPosition)
     end
 
     for i, member in ipairs(AddonTable.guildRoster) do
