@@ -50,15 +50,8 @@ function AddonTable.showGuildRoster(ldbObject)
         AddonTable.rosterFrame = nil
     end
 
-    local function sortByHeader(self, button)
-        if AddonTable.SortOrder == self.sortType then
-            AddonTable.SortAscending = not AddonTable.SortAscending
-        else
-            AddonTable.SortOrder = self.sortType
-            AddonTable.SortAscending = true
-        end
-
-        sort(AddonTable.guildRoster, function(a, b) 
+    local function sortRoster()
+        sort(AddonTable.guildRoster, function(a, b)
             if AddonTable.SortOrder == "name" then
                 return (AddonTable.SortAscending and a.name < b.name) or (not AddonTable.SortAscending and a.name > b.name)
             elseif AddonTable.SortOrder == "level" then
@@ -75,8 +68,20 @@ function AddonTable.showGuildRoster(ldbObject)
                 return a.name < b.name
             end
         end)
+    end
+
+    local function sortByHeader(self, button)
+        if AddonTable.SortOrder == self.sortType then
+            AddonTable.SortAscending = not AddonTable.SortAscending
+        else
+            AddonTable.SortOrder = self.sortType
+            AddonTable.SortAscending = true
+        end
+        sortRoster()
         AddonTable.showGuildRoster(ldbObject)
     end
+
+    sortRoster()
 
     AddonTable.currentLDBObject = ldbObject
 
