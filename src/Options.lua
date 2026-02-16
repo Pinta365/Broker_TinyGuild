@@ -39,7 +39,34 @@ function AddonTable.initOptionsPanel()
     end)
     optionsPanel.debugCheckbox = debugCheckbox
     yOffset = yOffset - 50
-    
+
+    -- Broker Text Format dropdown
+    local formatLabel = optionsPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    formatLabel:SetPoint("TOPLEFT", 16, yOffset)
+    formatLabel:SetText("Broker Text Format")
+    local formatDropdown = CreateFrame("Frame", "BrokerTinyGuildFormatDropdown", optionsPanel, "UIDropDownMenuTemplate")
+    formatDropdown:SetPoint("TOPLEFT", formatLabel, "BOTTOMLEFT", -16, -4)
+    local function FormatDropdown_Initialize(self, level)
+        for i, entry in ipairs(AddonTable.brokerTextFormats) do
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = entry.label
+            info.value = i
+            info.checked = (BrokerTinyGuildDB.brokerTextFormat or 1) == i
+            info.func = function()
+                BrokerTinyGuildDB.brokerTextFormat = i
+                UIDropDownMenu_SetText(formatDropdown, entry.label)
+                AddonTable.updateBrokerText()
+            end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end
+    UIDropDownMenu_SetWidth(formatDropdown, 180)
+    UIDropDownMenu_Initialize(formatDropdown, FormatDropdown_Initialize)
+    local currentFormat = AddonTable.brokerTextFormats[BrokerTinyGuildDB.brokerTextFormat or 1]
+    UIDropDownMenu_SetText(formatDropdown, currentFormat and currentFormat.label or "Guild: 5/100 Online")
+    optionsPanel.formatDropdown = formatDropdown
+    yOffset = yOffset - 60
+
     -- Background Opacity slider
     local opacityLabel = optionsPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     opacityLabel:SetPoint("TOPLEFT", 16, yOffset)
@@ -140,6 +167,10 @@ function AddonTable.initOptionsPanel()
         end
         if optionsPanel.debugCheckbox then
             optionsPanel.debugCheckbox:SetChecked(BrokerTinyGuildDB.debug == true)  -- Default to false
+        end
+        if optionsPanel.formatDropdown then
+            local fmt = AddonTable.brokerTextFormats[BrokerTinyGuildDB.brokerTextFormat or 1]
+            UIDropDownMenu_SetText(optionsPanel.formatDropdown, fmt and fmt.label or "Guild: 5/100 Online")
         end
         if optionsPanel.opacitySlider then
             local opacity = (BrokerTinyGuildDB.backgroundOpacity or 0.8) * 100

@@ -143,11 +143,9 @@ end
 function AddonTable.updateBrokerText()
     if IsInGuild() then
         if (AddonTable.online) then
-            if (AddonTable.numGuildMembers > 0) then
-                AddonTable.BrokerTinyGuild.text = string.format(WrapTextInColorCode("%s:", "ff40FF40") .. " %d/%d Online", AddonTable.guildName, AddonTable.online, AddonTable.numGuildMembers)
-            else
-                AddonTable.BrokerTinyGuild.text = string.format(WrapTextInColorCode("%s:", "ff40FF40") .. " %d Online", AddonTable.guildName, AddonTable.online)
-            end
+            local formatIndex = BrokerTinyGuildDB.brokerTextFormat or 1
+            local formatEntry = AddonTable.brokerTextFormats[formatIndex] or AddonTable.brokerTextFormats[1]
+            AddonTable.BrokerTinyGuild.text = formatEntry.format(AddonTable.guildName, AddonTable.online, AddonTable.numGuildMembers or 0)
         else
             AddonTable.BrokerTinyGuild.text = string.format(WrapTextInColorCode("%s", "ff40FF40"), AddonTable.guildName)
         end
