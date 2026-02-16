@@ -77,8 +77,15 @@ function AddonTable.showGuildRoster(ldbObject)
             AddonTable.SortOrder = self.sortType
             AddonTable.SortAscending = true
         end
+        BrokerTinyGuildDB.sortOrder = AddonTable.SortOrder
+        BrokerTinyGuildDB.sortAscending = AddonTable.SortAscending
         sortRoster()
         AddonTable.showGuildRoster(ldbObject)
+    end
+
+    if AddonTable.SortOrder == "officerNote" and not (AddonTable.hasOfficerNotes and BrokerTinyGuildDB.showOfficerNotes) then
+        AddonTable.SortOrder = "name"
+        AddonTable.SortAscending = true
     end
 
     sortRoster()

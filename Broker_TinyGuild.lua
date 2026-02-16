@@ -4,14 +4,17 @@
 local addonName, AddonTable = ...
 
 local function initTinyGuild()
-    AddonTable.SortOrder = "name"
-    AddonTable.SortAscending = true
     AddonTable.guildRoster = {}
     AddonTable.tempFontString = BrokerTinyGuild:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     C_GuildInfo.GuildRoster()
-    
+
     -- Initialize saved variables
     AddonTable.initSettings()
+
+    -- Load persisted sort settings
+    AddonTable.SortOrder = BrokerTinyGuildDB.sortOrder or "name"
+    AddonTable.SortAscending = BrokerTinyGuildDB.sortAscending
+    if AddonTable.SortAscending == nil then AddonTable.SortAscending = true end
 end
 
 local function onEvent(self, event, ...)
