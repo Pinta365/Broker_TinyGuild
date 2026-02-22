@@ -19,7 +19,12 @@ function AddonTable.updateGuildRoster()
     if IsInGuild() and C_Club and C_Club.GetGuildClubId and CommunitiesUtil and CommunitiesUtil.GetAndSortMemberInfo then
         local clubId = C_Club.GetGuildClubId()
         if clubId then
-            communityMembers = CommunitiesUtil.GetAndSortMemberInfo(clubId, nil) or {}
+            -- pcall to guard against Blizzard API returning secret values instead of tables (Midnight).
+            -- Only used for checking if a member is in timerunning, will try and get a better way to do this in the future.
+            local ok, result = pcall(CommunitiesUtil.GetAndSortMemberInfo, clubId, nil)
+            if ok and type(result) == "table" then
+                communityMembers = result
+            end
         end
     end
     
