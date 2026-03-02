@@ -138,7 +138,10 @@ function AddonTable.updateGuildRoster()
 end
 
 function AddonTable.updateGMOTD()
-    AddonTable.GMOTD = GetGuildRosterMOTD()
+    if not InCombatLockdown() then
+        local motd = C_GuildInfo.GetMOTD()
+        if motd then AddonTable.GMOTD = motd end
+    end
 end
 
 function AddonTable.updateGuildName()

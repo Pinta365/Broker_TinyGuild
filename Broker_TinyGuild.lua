@@ -23,7 +23,7 @@ local function onEvent(self, event, ...)
         AddonTable.initBroker()
         AddonTable.initOptionsPanel()
     elseif event == "GUILD_MOTD" then
-        AddonTable.updateGMOTD()
+        AddonTable.GMOTD = ...
     elseif event == "PLAYER_ENTERING_WORLD" then
         local scaleMult = BrokerTinyGuildDB and BrokerTinyGuildDB.scale or 1
         self:SetScale(UIParent:GetScale() * scaleMult)
