@@ -6,7 +6,11 @@ local addonName, AddonTable = ...
 local function initTinyGuild()
     AddonTable.guildRoster = {}
     AddonTable.tempFontString = BrokerTinyGuild:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    C_GuildInfo.GuildRoster()
+    if C_GuildInfo and C_GuildInfo.GuildRoster then
+        C_GuildInfo.GuildRoster()
+    else
+        GuildRoster()
+    end
 
     -- Initialize saved variables
     AddonTable.initSettings()
