@@ -3,6 +3,7 @@ ignore:
   - .github
   - README.md
   - .pkgmeta
+  - deno.json
 externals:
   libs/LibStub: https://repos.curseforge.com/wow/libstub/trunk
   libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1 
