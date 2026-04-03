@@ -31,7 +31,7 @@ function AddonTable.updateGuildRoster()
     AddonTable.hasOfficerNotes = false
     
     for i = 1, numGuildMembers do
-        local name, rankName, _, level, classDisplayName, zone,
+        local name, rankName, rankIndex, level, classDisplayName, zone,
               publicNote, officerNote, isOnline, status, classLocalizationIndependent,
               _, _, _, _, _, guid = GetGuildRosterInfo(i)
 
@@ -78,6 +78,7 @@ function AddonTable.updateGuildRoster()
                     name = name,
                     status = status,
                     level = level,
+                    rankIndex = rankIndex,
                     rankName = rankName,
                     classDisplayName = classDisplayName,
                     classLocalizationIndependent = classLocalizationIndependent,

@@ -57,7 +57,7 @@ function AddonTable.showGuildRoster(ldbObject)
             elseif AddonTable.SortOrder == "level" then
                 return (AddonTable.SortAscending and a.level < b.level) or (not AddonTable.SortAscending and a.level > b.level)
             elseif AddonTable.SortOrder == "rank" then
-                return (AddonTable.SortAscending and a.rankName < b.rankName) or (not AddonTable.SortAscending and a.rankName > b.rankName)
+                return (AddonTable.SortAscending and a.rankIndex < b.rankIndex) or (not AddonTable.SortAscending and a.rankIndex > b.rankIndex)
             elseif AddonTable.SortOrder == "zone" then
                 return (AddonTable.SortAscending and a.zone < b.zone) or (not AddonTable.SortAscending and a.zone > b.zone)
             elseif AddonTable.SortOrder == "note" then
