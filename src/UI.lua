@@ -4,7 +4,7 @@
 local addonName, AddonTable = ...
 
 local function openWhisper(targetName)
-    if not targetName or targetName == "" then return end
+    if not targetName or AddonTable.isSecret(targetName) or targetName == "" then return end
     if ChatFrameUtil and ChatFrameUtil.SendTell then
         ChatFrameUtil.SendTell(targetName)
     else
@@ -50,23 +50,36 @@ function AddonTable.showGuildRoster(ldbObject)
         AddonTable.rosterFrame = nil
     end
 
-    local function sortRoster()
-        sort(AddonTable.guildRoster, function(a, b)
-            if AddonTable.SortOrder == "name" then
-                return (AddonTable.SortAscending and a.name < b.name) or (not AddonTable.SortAscending and a.name > b.name)
-            elseif AddonTable.SortOrder == "level" then
-                return (AddonTable.SortAscending and a.level < b.level) or (not AddonTable.SortAscending and a.level > b.level)
-            elseif AddonTable.SortOrder == "rank" then
-                return (AddonTable.SortAscending and a.rankIndex < b.rankIndex) or (not AddonTable.SortAscending and a.rankIndex > b.rankIndex)
-            elseif AddonTable.SortOrder == "zone" then
-                return (AddonTable.SortAscending and a.zone < b.zone) or (not AddonTable.SortAscending and a.zone > b.zone)
-            elseif AddonTable.SortOrder == "note" then
-                return (AddonTable.SortAscending and a.publicNote < b.publicNote) or (not AddonTable.SortAscending and a.publicNote > b.publicNote)
-            elseif AddonTable.SortOrder == "officerNote" then
-                return (AddonTable.SortAscending and a.officerNote < b.officerNote) or (not AddonTable.SortAscending and a.officerNote > b.officerNote)
-            else
-                return a.name < b.name
+    local sortFields = {
+        name = "name",
+        level = "level",
+        rank = "rankIndex",
+        zone = "zone",
+        note = "publicNote",
+        officerNote = "officerNote",
+    }
+
+    local function columnIsSortable(field)
+        for _, member in ipairs(AddonTable.guildRoster) do
+            local value = member[field]
+            if value == nil or AddonTable.isSecret(value) then
+                return false
             end
+        end
+        return true
+    end
+
+    local function sortRoster()
+        local field = sortFields[AddonTable.SortOrder] or "name"
+        if not columnIsSortable(field) then
+            return
+        end
+
+        sort(AddonTable.guildRoster, function(a, b)
+            if AddonTable.SortAscending then
+                return a[field] < b[field]
+            end
+            return a[field] > b[field]
         end)
     end
 
@@ -127,8 +140,13 @@ function AddonTable.showGuildRoster(ldbObject)
         motdHeader:SetWordWrap(true)
         motdHeader:SetWidth(AddonTable.rosterFrame:GetWidth() - 20)
 
-        verticalOffset = verticalOffset + motdHeader:GetStringHeight() + 10
-        totalHeight = totalHeight +motdHeader:GetStringHeight() + 10
+        local motdHeight = motdHeader:GetStringHeight()
+        if not AddonTable.isUsableNumber(motdHeight) then
+            motdHeight = 14
+        end
+
+        verticalOffset = verticalOffset + motdHeight + 10
+        totalHeight = totalHeight + motdHeight + 10
         AddonTable.rosterFrame:SetSize(totalWidth, totalHeight)
     end
 
@@ -277,7 +295,9 @@ function AddonTable.showGuildRoster(ldbObject)
             memberFrame.officerNoteText = officerNoteText
         end
 
-        local classColor = RAID_CLASS_COLORS[member.classLocalizationIndependent]
+        local classToken = member.classLocalizationIndependent
+        local classColor = (classToken ~= nil and not AddonTable.isSecret(classToken))
+            and RAID_CLASS_COLORS[classToken] or nil
         if classColor then
             nameText:SetTextColor(classColor.r, classColor.g, classColor.b)
         end
@@ -290,7 +310,7 @@ function AddonTable.showGuildRoster(ldbObject)
         end
 
         local groupIndicatorName = nil
-        if member.name then
+        if member.name and not AddonTable.isSecret(member.name) then
             if Ambiguate then
                 groupIndicatorName = Ambiguate(member.name, "short")
             else

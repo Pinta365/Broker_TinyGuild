@@ -8,16 +8,20 @@ function AddonTable.initBroker()
     AddonTable.BrokerTinyGuild = LDB:NewDataObject("Broker_TinyGuild", {
         type = "data source",
         text = "TinyGuild Loading",
-        icon = "Interface\\AddOns\\KeystoneRoulette\\Textures\\pinta",
+        icon = "Interface\\AddOns\\Broker_TinyGuild\\Textures\\pinta",
 
         OnClick = function(self, button)
+            if AddonTable.isRestricted("Chat") then
+                print("|cff45D388TinyGuild|r: guild frame is blocked by addon restrictions here. Use the micro menu.")
+                return
+            end
             ToggleGuildFrame()
         end,
 
         OnEnter = function(self)
             AddonTable.cancelHideTimer()
             if IsInGuild() and AddonTable.online then
-                AddonTable.showGuildRoster(self)
+                AddonTable.guard("show-roster", AddonTable.showGuildRoster, self)
             end
         end,
 

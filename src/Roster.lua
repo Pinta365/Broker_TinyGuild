@@ -11,25 +11,83 @@ AddonTable.publicNoteMaxWidth = 200
 AddonTable.officerNoteMaxWidth = 200
 AddonTable.hasOfficerNotes = false
 
+local function getCommunityMembers()
+    if not IsInGuild() or AddonTable.isRestricted("Chat") then
+        return nil
+    end
+
+    if not (C_Club and C_Club.GetGuildClubId and CommunitiesUtil and CommunitiesUtil.GetAndSortMemberInfo) then
+        return nil
+    end
+
+    local clubId = C_Club.GetGuildClubId()
+    if not clubId then
+        return nil
+    end
+
+    local members = AddonTable.guard("club-members", CommunitiesUtil.GetAndSortMemberInfo, clubId, nil)
+    if type(members) ~= "table" or AddonTable.isSecretTable(members) then
+        return nil
+    end
+
+    return members
+end
+
+local function isTimerunning(communityMembers, guid)
+    if not communityMembers or guid == nil or AddonTable.isSecret(guid) then
+        return false
+    end
+
+    for _, memberInfo in ipairs(communityMembers) do
+        if AddonTable.isSecret(memberInfo) then
+            return false
+        end
+
+        local memberGuid = memberInfo.guid
+        if not AddonTable.isSecret(memberGuid) and memberGuid == guid
+                and memberInfo.timerunningSeasonID then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function truncateNote(note)
+    if not note or AddonTable.isSecret(note) then
+        return note
+    end
+
+    if #note > 200 then
+        return string.sub(note, 1, 197) .. "..."
+    end
+
+    return note
+end
+
+local function measure(value, currentMax)
+    if value == nil or AddonTable.isSecret(value) then
+        return currentMax
+    end
+
+    AddonTable.tempFontString:SetText(value)
+
+    local width = AddonTable.tempFontString:GetStringWidth()
+    if not AddonTable.isUsableNumber(width) then
+        return currentMax
+    end
+
+    return max(currentMax, width)
+end
+
 function AddonTable.updateGuildRoster()
     local newRoster = {}
     local numGuildMembers, _ = GetNumGuildMembers()
-    
-    local communityMembers = {}
-    if IsInGuild() and C_Club and C_Club.GetGuildClubId and CommunitiesUtil and CommunitiesUtil.GetAndSortMemberInfo then
-        local clubId = C_Club.GetGuildClubId()
-        if clubId then
-            -- pcall to guard against Blizzard API returning secret values instead of tables (Midnight).
-            -- Only used for checking if a member is in timerunning, will try and get a better way to do this in the future.
-            local ok, result = pcall(CommunitiesUtil.GetAndSortMemberInfo, clubId, nil)
-            if ok and type(result) == "table" then
-                communityMembers = result
-            end
-        end
-    end
-    
+
+    local communityMembers = getCommunityMembers()
+
     AddonTable.hasOfficerNotes = false
-    
+
     for i = 1, numGuildMembers do
         local name, rankName, rankIndex, level, classDisplayName, zone,
               publicNote, officerNote, isOnline, status, classLocalizationIndependent,
@@ -37,41 +95,36 @@ function AddonTable.updateGuildRoster()
 
         if (isOnline) and name then
             name = AddonTable.sanitizeName(name)
-            if Ambiguate then
+            if Ambiguate and not AddonTable.isSecret(name) then
                 name = Ambiguate(name, "none")
             end
-            
+
             local isDuplicate = false
-            for _, existingMember in ipairs(newRoster) do
-                if existingMember.name == name then
-                    isDuplicate = true
-                    break
-                end
-            end
-            
-            if not isDuplicate then
-                local raceId = guid and C_PlayerInfo.GetRace(PlayerLocation:CreateFromGUID(guid));
-                local factionInfo = raceId and C_CreatureInfo.GetFactionInfo(raceId)
-                local factionName = factionInfo and factionInfo.groupTag
-
-                if publicNote and #publicNote > 200 then
-                    publicNote = string.sub(publicNote, 1, 197) .. "..."
-                end
-                if officerNote and #officerNote > 200 then
-                    officerNote = string.sub(officerNote, 1, 197) .. "..."
-                end
-
-                if officerNote and officerNote ~= "" and AddonTable.hasOfficerNotes == false then
-                    AddonTable.hasOfficerNotes = true
-                end
-
-                local isInTimerunning = false
-                
-                for _, memberInfo in ipairs(communityMembers) do
-                    if memberInfo.guid == guid and memberInfo.timerunningSeasonID then
-                        isInTimerunning = true
+            if not AddonTable.isSecret(name) then
+                for _, existingMember in ipairs(newRoster) do
+                    if not AddonTable.isSecret(existingMember.name) and existingMember.name == name then
+                        isDuplicate = true
                         break
                     end
+                end
+            end
+
+            if not isDuplicate then
+                local factionName
+                if guid and not AddonTable.isSecret(guid) then
+                    local raceId = C_PlayerInfo.GetRace(PlayerLocation:CreateFromGUID(guid))
+                    if raceId and not AddonTable.isSecret(raceId) then
+                        local factionInfo = C_CreatureInfo.GetFactionInfo(raceId)
+                        factionName = factionInfo and factionInfo.groupTag
+                    end
+                end
+
+                publicNote = truncateNote(publicNote)
+                officerNote = truncateNote(officerNote)
+
+                if officerNote and AddonTable.hasOfficerNotes == false
+                        and (AddonTable.isSecret(officerNote) or officerNote ~= "") then
+                    AddonTable.hasOfficerNotes = true
                 end
 
                 table.insert(newRoster, {
@@ -86,7 +139,7 @@ function AddonTable.updateGuildRoster()
                     zone = zone,
                     publicNote = publicNote,
                     officerNote = officerNote,
-                    isInTimerunning = isInTimerunning,
+                    isInTimerunning = isTimerunning(communityMembers, guid),
                 })
             end
         end
@@ -105,23 +158,15 @@ function AddonTable.updateGuildRoster()
     AddonTable.officerNoteMaxWidth = 200
 
     for _, member in ipairs(newRoster) do
-        AddonTable.tempFontString:SetText(member.name)
-        AddonTable.nameMaxWidth = max(AddonTable.nameMaxWidth, AddonTable.tempFontString:GetStringWidth())
-
-        AddonTable.tempFontString:SetText(member.rankName)
-        AddonTable.rankMaxWidth = max(AddonTable.rankMaxWidth, AddonTable.tempFontString:GetStringWidth())
-
-        AddonTable.tempFontString:SetText(member.zone)
-        AddonTable.zoneMaxWidth = max(AddonTable.zoneMaxWidth, AddonTable.tempFontString:GetStringWidth())
-
-        AddonTable.tempFontString:SetText(member.publicNote)
-        AddonTable.publicNoteMaxWidth = max(AddonTable.publicNoteMaxWidth, AddonTable.tempFontString:GetStringWidth())
+        AddonTable.nameMaxWidth = measure(member.name, AddonTable.nameMaxWidth)
+        AddonTable.rankMaxWidth = measure(member.rankName, AddonTable.rankMaxWidth)
+        AddonTable.zoneMaxWidth = measure(member.zone, AddonTable.zoneMaxWidth)
+        AddonTable.publicNoteMaxWidth = measure(member.publicNote, AddonTable.publicNoteMaxWidth)
 
         if AddonTable.hasOfficerNotes and BrokerTinyGuildDB.showOfficerNotes then
-            AddonTable.tempFontString:SetText(member.officerNote or "")
-            AddonTable.officerNoteMaxWidth = math.max(AddonTable.officerNoteMaxWidth, AddonTable.tempFontString:GetStringWidth())
+            AddonTable.officerNoteMaxWidth = measure(member.officerNote or "", AddonTable.officerNoteMaxWidth)
         end
-        
+
         if member.factionName == "Alliance" then
             member.factionIcon = "Interface\\FriendsFrame\\PlusManz-Alliance.blp"
         elseif member.factionName == "Horde" then
@@ -134,7 +179,7 @@ function AddonTable.updateGuildRoster()
     AddonTable.nameMaxWidth = AddonTable.nameMaxWidth + 15
     AddonTable.rankMaxWidth = AddonTable.rankMaxWidth + 15
     AddonTable.zoneMaxWidth = AddonTable.zoneMaxWidth + 15
-    
+
     return #newRoster, numGuildMembers
 end
 
@@ -167,14 +212,13 @@ function AddonTable.updateGuildOnline()
     -- Delayed throttling so we always got the latest data but after short delay to prevent spamming and resource hogging.
     if not AddonTable.guildListUpdateTimer then
         AddonTable.guildListUpdateTimer = C_Timer.NewTimer(4, function()
-            local online, numGuildMembers = AddonTable.updateGuildRoster()
-            if online > 0 then
+            local online, numGuildMembers = AddonTable.guard("roster-update", AddonTable.updateGuildRoster)
+            if online and online > 0 then
                 AddonTable.online = online
-                AddonTable.numGuildMembers = numGuildMembers
             else
                 AddonTable.online = nil
-                AddonTable.numGuildMembers = numGuildMembers
             end
+            AddonTable.numGuildMembers = numGuildMembers or AddonTable.numGuildMembers
             AddonTable.updateGMOTD()
             AddonTable.updateGuildName()
             AddonTable.updateBrokerText()
@@ -182,4 +226,3 @@ function AddonTable.updateGuildOnline()
         end)
     end
 end
-
