@@ -8,12 +8,9 @@ local function initTinyGuild()
     AddonTable.tempFontString = BrokerTinyGuild:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     if C_GuildInfo and C_GuildInfo.GuildRoster then
         C_GuildInfo.GuildRoster()
-    else
+    elseif GuildRoster then
         GuildRoster()
     end
-
-    -- Initialize saved variables
-    AddonTable.initSettings()
 
     -- Load persisted sort settings
     AddonTable.SortOrder = BrokerTinyGuildDB.sortOrder or "name"
@@ -23,8 +20,9 @@ end
 
 local function onEvent(self, event, ...)
     if event == "ADDON_LOADED" and ... == addonName then
-        initTinyGuild()
+        AddonTable.initSettings()
         AddonTable.initBroker()
+        initTinyGuild()
         AddonTable.initOptionsPanel()
     elseif event == "GUILD_MOTD" then
         AddonTable.GMOTD = ...

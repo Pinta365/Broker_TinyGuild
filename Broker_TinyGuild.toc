@@ -1,4 +1,4 @@
-## Interface: 120105
+## Interface: 120105, 16001, 50504, 20506, 11509
 ## Name: Broker_TinyGuild
 ## Title: |cff45D388TinyGuild|r
 ## Notes: View and interact with your guild's online members
