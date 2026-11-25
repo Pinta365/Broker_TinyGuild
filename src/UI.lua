@@ -361,9 +361,13 @@ function AddonTable.showGuildRoster(ldbObject)
 
         memberFrame:SetScript("OnClick", function(self, button)
             if button == "LeftButton" then
-                openWhisper(member.name)
+                if BrokerTinyGuildDB.clickToWhisper ~= false then
+                    openWhisper(member.name)
+                end
             elseif button == "RightButton" then
-                C_PartyInfo.InviteUnit(member.name)
+                if BrokerTinyGuildDB.clickToInvite ~= false then
+                    C_PartyInfo.InviteUnit(member.name)
+                end
             end
         end)
 
@@ -377,7 +381,14 @@ function AddonTable.showGuildRoster(ldbObject)
 
     local footerHint = footer:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     footerHint:SetPoint("LEFT")
-    footerHint:SetText("|cFFAAAAAALeft-Click to whisper | Right-Click to invite|r")
+    local hints = {}
+    if BrokerTinyGuildDB.clickToWhisper ~= false then
+        table.insert(hints, "Left-Click to whisper")
+    end
+    if BrokerTinyGuildDB.clickToInvite ~= false then
+        table.insert(hints, "Right-Click to invite")
+    end
+    footerHint:SetText(#hints > 0 and ("|cFFAAAAAA" .. table.concat(hints, " | ") .. "|r") or "")
 
     local optionsButton = CreateFrame("Button", nil, footer)
     optionsButton:SetPoint("RIGHT")

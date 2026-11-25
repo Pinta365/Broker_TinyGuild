@@ -16,6 +16,8 @@ AddonTable.brokerTextFormats = {
 -- Default settings
 AddonTable.defaultSettings = {
     showOfficerNotes = true,
+    clickToWhisper = true,    -- Left-click a roster member to whisper them
+    clickToInvite = true,     -- Right-click a roster member to invite them to a party
     debug = false,
     backgroundOpacity = 0.8,  -- Default tooltip transparency (0.0 = transparent, 1.0 = opaque)
     scale = 1.0,              -- Panel scale multiplier (1.0 = match UI scale, 0.5–1.5 = 50%–150%)

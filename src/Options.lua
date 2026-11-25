@@ -27,6 +27,28 @@ function AddonTable.initOptionsPanel()
     end)
     optionsPanel.officerNotesCheckbox = officerNotesCheckbox
     yOffset = yOffset - 30
+
+    -- Left-click to whisper checkbox
+    local whisperCheckbox = CreateFrame("CheckButton", nil, optionsPanel, "InterfaceOptionsCheckButtonTemplate")
+    whisperCheckbox:SetPoint("TOPLEFT", 16, yOffset)
+    whisperCheckbox.Text:SetText("Left-Click to Whisper")
+    whisperCheckbox.Text:SetFontObject("GameFontHighlightSmall")
+    whisperCheckbox:SetScript("OnClick", function(self)
+        BrokerTinyGuildDB.clickToWhisper = self:GetChecked()
+    end)
+    optionsPanel.whisperCheckbox = whisperCheckbox
+    yOffset = yOffset - 30
+
+    -- Right-click to invite checkbox
+    local inviteCheckbox = CreateFrame("CheckButton", nil, optionsPanel, "InterfaceOptionsCheckButtonTemplate")
+    inviteCheckbox:SetPoint("TOPLEFT", 16, yOffset)
+    inviteCheckbox.Text:SetText("Right-Click to Invite")
+    inviteCheckbox.Text:SetFontObject("GameFontHighlightSmall")
+    inviteCheckbox:SetScript("OnClick", function(self)
+        BrokerTinyGuildDB.clickToInvite = self:GetChecked()
+    end)
+    optionsPanel.inviteCheckbox = inviteCheckbox
+    yOffset = yOffset - 30
     
     -- Show Debug Messages checkbox
     local debugCheckbox = CreateFrame("CheckButton", nil, optionsPanel, "InterfaceOptionsCheckButtonTemplate")
@@ -164,6 +186,12 @@ function AddonTable.initOptionsPanel()
     local function RefreshOptions()
         if optionsPanel.officerNotesCheckbox then
             optionsPanel.officerNotesCheckbox:SetChecked(BrokerTinyGuildDB.showOfficerNotes ~= false)  -- Default to true
+        end
+        if optionsPanel.whisperCheckbox then
+            optionsPanel.whisperCheckbox:SetChecked(BrokerTinyGuildDB.clickToWhisper ~= false)  -- Default to true
+        end
+        if optionsPanel.inviteCheckbox then
+            optionsPanel.inviteCheckbox:SetChecked(BrokerTinyGuildDB.clickToInvite ~= false)  -- Default to true
         end
         if optionsPanel.debugCheckbox then
             optionsPanel.debugCheckbox:SetChecked(BrokerTinyGuildDB.debug == true)  -- Default to false

@@ -11,7 +11,7 @@ TinyGuild is a lightweight addon that displays your guild's online members, rank
 
 * View a list of online guild members.
 * Sort the roster by name, level, rank, zone, or public note by clicking on the headers.
-* Left-click a member to whisper them, or right-click to invite them to a party.
+* Left-click a member to whisper them, or right-click to invite them to a party. Either shortcut can be turned off in the options.
 * Display the Guild Message of the Day.
 * See the number of online guild members at a glance.
 
